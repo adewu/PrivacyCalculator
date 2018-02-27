@@ -1,2 +1,2 @@
 # PrivacyCalculator
-Kotlin project for practice [:rocket:]
+Kotlin project for practice :rocket:
