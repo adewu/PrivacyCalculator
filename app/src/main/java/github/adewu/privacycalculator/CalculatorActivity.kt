@@ -1,23 +1,53 @@
 package github.adewu.privacycalculator
 
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.text.method.TextKeyListener.clear
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
+import android.util.Log
+import com.zhihu.matisse.Matisse
+import github.adewu.privacycalculator.CalculatorController.Companion.REQUEST_CODE_CHOOSE
 
 import kotlinx.android.synthetic.main.activity_calculator.*
+import java.security.Permission
+import java.util.jar.Manifest
 
-class CalculatorActivity : AppCompatActivity() {
+class CalculatorActivity : BaseActivity() {
 
-    private val mCalculatorController : CalculatorController = CalculatorController()
+    private val mCalculatorController : CalculatorController = CalculatorController(this)
+
+    private val PERMISSION_CODE : Int = 99
+
+    internal var mPermissionGranted : Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calculator)
 
         initWidgets()
+
+        checkPermission()
     }
 
+    private fun checkPermission() {
+        val permissionArray = arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE,android.Manifest.permission.READ_EXTERNAL_STORAGE)
+        if (ContextCompat.checkSelfPermission(this, permissionArray[0]) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,permissionArray , PERMISSION_CODE)
+        }else
+            mPermissionGranted = true
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_CODE)
+            mPermissionGranted = true
+    }
     private fun initWidgets(){
+
         tv_c.setOnClickListener({ v -> onViewsClick(v.id) })
         tv_0.setOnClickListener({ v -> onViewsClick(v.id) })
         tv_1.setOnClickListener({ v -> onViewsClick(v.id) })
@@ -42,27 +72,30 @@ class CalculatorActivity : AppCompatActivity() {
 
     private fun onViewsClick(id: Int) {
         when (id) {
-            tv_c.id -> mCalculatorController.clear()
+            tv_c.id ->{
+                mCalculatorController.clear()
+                et_result.setText("")
+            }
 
-            tv_0.id -> mCalculatorController.inputNumbers(0)
+            tv_0.id -> et_result.setText(mCalculatorController.inputNumbers("0"))
 
-            tv_1.id -> mCalculatorController.inputNumbers(1)
+            tv_1.id -> et_result.setText(mCalculatorController.inputNumbers("1"))
 
-            tv_2.id -> mCalculatorController.inputNumbers(2)
+            tv_2.id -> et_result.setText(mCalculatorController.inputNumbers("2"))
 
-            tv_3.id -> mCalculatorController.inputNumbers(3)
+            tv_3.id -> et_result.setText(mCalculatorController.inputNumbers("3"))
 
-            tv_4.id -> mCalculatorController.inputNumbers(4)
+            tv_4.id -> et_result.setText(mCalculatorController.inputNumbers("4"))
 
-            tv_5.id -> mCalculatorController.inputNumbers(5)
+            tv_5.id -> et_result.setText(mCalculatorController.inputNumbers("5"))
 
-            tv_6.id -> mCalculatorController.inputNumbers(6)
+            tv_6.id -> et_result.setText(mCalculatorController.inputNumbers("6"))
 
-            tv_7.id -> mCalculatorController.inputNumbers(7)
+            tv_7.id -> et_result.setText(mCalculatorController.inputNumbers("7"))
 
-            tv_8.id -> mCalculatorController.inputNumbers(8)
+            tv_8.id -> et_result.setText(mCalculatorController.inputNumbers("8"))
 
-            tv_9.id -> mCalculatorController.inputNumbers(9)
+            tv_9.id -> et_result.setText(mCalculatorController.inputNumbers("9"))
 
             tv_del.id -> mCalculatorController.deleteNumber()
 
@@ -84,5 +117,14 @@ class CalculatorActivity : AppCompatActivity() {
         }
     }
 
+    var mSelected: List<Uri> = emptyList()
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_CHOOSE && resultCode == Activity.RESULT_OK) {
+            mSelected = Matisse.obtainResult(data)
+            Log.d("Matisse", "mSelected: " + mSelected)
+        }
+    }
 
 }
